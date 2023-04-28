@@ -1,0 +1,1 @@
+Le projet de la bibliothèque en mini format consiste à fournir aux utilisateurs une API leur permettant d'obtenir des informations sur des livres et leurs auteurs.
