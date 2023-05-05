@@ -34,9 +34,6 @@ class AppFixtures extends Fixture
         $userAdmin->setPassword($this->userPasswordHasher->hashPassword($userAdmin, "password"));
         $manager->persist($userAdmin);
 
-
-
-
         // Création des auteurs.
         $listAuthor = [];
         for ($i = 0; $i < 10; $i++) {
