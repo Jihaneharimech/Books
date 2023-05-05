@@ -6,6 +6,7 @@ use App\Entity\Book;
 use App\Repository\AuthorRepository;
 use App\Repository\BookRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -19,11 +20,23 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class BookController extends AbstractController
 {
-    #[Route('/api/books', name: 'app_book')]
-    public function getBookList(BookRepository $bookRepository, SerializerInterface $serializer): JsonResponse
+    // #[Route('/api/books', name: 'app_book')]
+    // public function getBookList(BookRepository $bookRepository, SerializerInterface $serializer): JsonResponse
+    // {
+    //     $bookList = $bookRepository->findAll();
+    //     $jsonBookList = $serializer->serialize($bookList, 'json' ,['groups' => 'getBooks']);
+    //     return new JsonResponse($jsonBookList, Response::HTTP_OK, [], true);
+    // }
+
+    #[Route('/api/books', name: 'app_book', methods: ['GET'])]
+    public function getAllBooks(BookRepository $bookRepository, SerializerInterface $serializer, Request $request): JsonResponse
     {
-        $bookList = $bookRepository->findAll();
-        $jsonBookList = $serializer->serialize($bookList, 'json' ,['groups' => 'getBooks']);
+        $page = $request->get('page', 1);
+        $limit = $request->get('limit', 3);
+        $bookList = $bookRepository->findAllWithPagination($page, $limit);
+
+        $jsonBookList = $serializer->serialize($bookList, 'json', ['groups' => 'getBooks']);
+            
         return new JsonResponse($jsonBookList, Response::HTTP_OK, [], true);
     }
 
@@ -43,6 +56,7 @@ class BookController extends AbstractController
     }
 
     #[Route('/api/book', name:"createBook", methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN', message: 'Vous n\'avez pas les droits suffisants pour créer un livre')]
     public function createBook(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator, AuthorRepository $authorRepository, ValidatorInterface $validator): JsonResponse 
     {
         $book = $serializer->deserialize($request->getContent(), Book::class, 'json');
@@ -83,6 +97,7 @@ class BookController extends AbstractController
         $em->flush();
         return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
     }
+
 
 
 }
